@@ -7,7 +7,7 @@ A helper function that resizes images using WordPress' built in [wp_get_image_ed
     get_image_thumb( $src, $opts );
 
 ## Parameters:
-- $src - Image $src file
+- $src - Image src (url or path)
 - $opts (optional) - Resize options
 
 ### $opts:
