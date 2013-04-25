@@ -1,6 +1,22 @@
 <?php 
 
 /**
+ * Returns file extension or false, if it's not supported
+ *
+ * @param {String} url or path to image
+ * @return {String} File extension
+ */
+function get_extension( $src ) {
+
+    $type = wp_check_filetype( $src );
+
+    ChromePhp::info( $type );
+
+    return ( isset( $type[ "ext" ] ) ) ? $type[ "ext" ] : false;
+}
+
+
+/**
  * Returns cached, modified image. 
  * If image is not cached, it will create a modified image, cache it,
  * then returns src to modified image.
@@ -19,6 +35,24 @@ function get_image_thumb( $src, $opts = array() ) {
         "q" => 95,
         "crop" => false
     );
+
+    //
+    // The default thumbnail url
+    //
+    $thumb_url  = $src;
+    
+    //
+    // Get the extension
+    //
+    $ext        = get_extension( $src );
+
+    //
+    // If we can't determine the extension, don't even bother trying.
+    //
+    if( !$ext ) {
+        return $thumb_url;
+    }
+
 
     $opts       = (array) $opts;
 
@@ -46,17 +80,18 @@ function get_image_thumb( $src, $opts = array() ) {
     // WordPress uploads directory (works with multi-site)
     $uploads    = wp_upload_dir();
 
-    // The final thumbnail url
-    $thumb_url  = $uploads[ "baseurl" ] . "/cache/$cache.jpg";
-    
     // Cache directory path
     $cache_dir  = $uploads[ "basedir" ] . "/cache";
+
+    // Reset the default thumbnail url, in case it's cached.
+    $thumb_url = $uploads[ "baseurl" ] . "/cache/$cache.$ext";
     
     // Thumbnail physical directory
     $thumb_dir  = $cache_dir;
 
     // Thumbnail physical filename
-    $thumb_file = $thumb_dir . "/$cache.jpg";
+    $thumb_file = $thumb_dir . "/$cache.$ext";
+
 
     //
     // Generate 'cache' directory if it doesn't exist yet.
@@ -64,6 +99,7 @@ function get_image_thumb( $src, $opts = array() ) {
     if( !dir( $cache_dir ) ) {
         mkdir( $cache_dir, 0755, true );
     }
+
 
     //
     // Check to see if the file is cached. If not, generate the resized file.
@@ -89,19 +125,24 @@ function get_image_thumb( $src, $opts = array() ) {
             //
             $editor->set_quality( $quality );
             
+            //
             // Save the modified file.
+            //
             $editor->save( $thumb_file );
-        
-        } else {
 
-            // Error occoured, return the original src.
-            $thumb_url = $src;  
-        
+        } else {
+            //
+            // Something didn't go right with the editor.
+            // Return original image src.
+            //
+            $thumb_url = $src;
         }
 
-    } 
+    }
 
+    //
     // Return thumbnail src
+    //
     return $thumb_url;
 
 }
