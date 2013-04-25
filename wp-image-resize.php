@@ -58,7 +58,7 @@ function get_image_thumb( $src, $opts = array() ) {
     $opts       = (array) $opts;
 
     // Merge default with passed in options
-    $opts       = array_merge( $default, $opts );
+    $opts       = wp_parse_args( $opts, $defaults );
 
     // Resize array
     $size       = isset( $opts[ "size" ] ) ? $opts[ "size" ] : false;
