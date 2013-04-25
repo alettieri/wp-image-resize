@@ -83,7 +83,7 @@ function get_image_thumb( $src, $opts = array() ) {
     $cache_dir  = $uploads[ "basedir" ] . "/cache";
 
     // Reset the default thumbnail url, in case it's cached.
-    $thumb_url = $uploads[ "baseurl" ] . "/cache/$cache.$ext";
+    $thumb_url  = $uploads[ "baseurl" ] . "/cache/$cache.$ext";
     
     // Thumbnail physical directory
     $thumb_dir  = $cache_dir;
