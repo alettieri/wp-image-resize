@@ -13,22 +13,20 @@ A helper function that resizes images using WordPress' built in [wp_get_image_ed
 ### $opts:
 
     array (
-        
-        "size" => array( 500, 200 ), // w x h
+        "w" => 500,
+        "h" => 200,
         "q" => 100, // Quality
         "crop" => false // Crop image
-
     );
 
 
 ### $opts - Default Values:
 
-    array (
-        
-        "size" => array( 525, 525 ), // w x h
-        "q" => 95, // Quality
-        "crop" => false // Crop image
-
+    array(
+        "w" => PHP_INT_MAX, // Won't resize if image width is smaller than default width
+        "h" => PHP_INT_MAX, // Won't resize if image height is smaller than default height
+        "q" => 95,
+        "crop" => false
     );
 
 
@@ -38,4 +36,8 @@ A helper function that resizes images using WordPress' built in [wp_get_image_ed
     $src = wp_get_attachment_image_src( $id, $size );
     $src = $src[0];
 
-    $newImage = get_image_thumb( $src );
+    $newImage = get_image_thumb( $src, array( "w" => 50, "h" => 50, "q" => 75, "crop" => true ) );
+
+### OR: 
+
+    $newImage = get_image_thumb( $src, "w=50&h=50&q=75&crop=true" );
