@@ -21,16 +21,17 @@ function get_extension( $src ) {
  * 
  * 
  * @param string $src Url or File path to image
- * @param array $opts { {'size'=>array( int, int ), 'q'=>int, 'crop'=>bool} }
+ * @param array $opts { {'w'=>int, 'h'=>int, 'q'=>int, 'crop'=>bool} } or "w=int&h=int&q=int&crop=bool"
  * @return string
  */
-function get_image_thumb( $src, $opts = array() ) {
-
+function get_image_thumb( $src, $opts = null ) {
+    
     //
     // Default Paramter values
     //
     $defaults = array(
-        "size" => array( 525, 525 ),
+        "w" => PHP_INT_MAX, // Won't resize if image width is smaller than default width
+        "h" => PHP_INT_MAX, // Won't resize if image height is smaller than default height
         "q" => 95,
         "crop" => false
     );
@@ -52,29 +53,26 @@ function get_image_thumb( $src, $opts = array() ) {
         return $thumb_url;
     }
 
-
-    $opts       = (array) $opts;
-
     // Merge default with passed in options
     $opts       = wp_parse_args( $opts, $defaults );
 
-    // Resize array
-    $size       = isset( $opts[ "size" ] ) ? $opts[ "size" ] : false;
-
+    // Extract paramater values
+    extract( $opts, EXTR_SKIP );
+    
     // Width
-    $w          = ( $size && isset( $size[ 0 ] ) ) ? $size[ 0 ] : 0;
+    $w          = ( isset( $w ) && is_int( intval( $w ) ) ) ? intval( $w ) : $defaults[ "w" ];
 
     // Height
-    $h          = ( $size && isset( $size[ 1 ] ) ) ? $size[ 1 ] : 0;
+    $h          = ( isset( $h ) && is_int( intval( $h ) ) ) ? intval( $h ) : $defaults[ "h" ];
 
-    // Image Quality
-    $quality    = isset( $opts[ "q" ] ) ? $opts[ "q" ] : 95;
+    // Quality
+    $q          = ( isset( $q ) && is_int( intval( $q ) ) ) ? intval( $q ) : $defaults[ "q" ];
 
-    // Crop Image?
-    $crop       = isset( $opts[ "crop" ] ) ? $opts[ "crop" ] : false;
+    // Crop
+    $crop       = ( isset( $crop ) && $crop ) ? $crop : $defaults[ "crop" ];
 
     // Generate Unique Cache file
-    $cache      = md5( $src . "$w-$h" );
+    $cache      = md5( $src . "$w-$h-$q-$crop" );
     
     // WordPress uploads directory (works with multi-site)
     $uploads    = wp_upload_dir();
@@ -113,16 +111,14 @@ function get_image_thumb( $src, $opts = array() ) {
         if( !is_wp_error( $editor ) ) {
                 
             //
-            // Should we resize the image?
+            // Resize the image
             //
-            if( $size ) {
-                $editor->resize( $w, $h, $crop );
-            }
-
+            $editor->resize( $w, $h, $crop );
+            
             //
             // Set the image quality
             //
-            $editor->set_quality( $quality );
+            $editor->set_quality( $q );
             
             //
             // Save the modified file.
