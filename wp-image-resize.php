@@ -31,7 +31,7 @@ function get_image_thumb( $src, $opts = array() ) {
     //
     // Default Paramter values
     //
-    $default = array(
+    $defaults = array(
         "size" => array( 525, 525 ),
         "q" => 95,
         "crop" => false
