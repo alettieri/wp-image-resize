@@ -10,8 +10,6 @@ function get_extension( $src ) {
 
     $type = wp_check_filetype( $src );
 
-    ChromePhp::info( $type );
-
     return ( isset( $type[ "ext" ] ) ) ? $type[ "ext" ] : false;
 }
 
