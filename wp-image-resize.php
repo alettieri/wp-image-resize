@@ -1,56 +1,107 @@
 <?php 
 
-    function get_image_thumb( $src, $opts = array() ) {
+/**
+ * Returns cached, modified image. 
+ * If image is not cached, it will create a modified image, cache it,
+ * then returns src to modified image.
+ * 
+ * @param {String} $src Url or File path to image
+ * @param {Array} [$opts] Array of options
+ * @return {String} path of modified image
+ */
+function get_image_thumb( $src, $opts = array() ) {
 
-            $default = array(
-                "size" => array( 525, 525 ),
-                "q" => 95,
-                "crop" => false
-            );
+    //
+    // Default Paramter values
+    //
+    $default = array(
+        "size" => array( 525, 525 ),
+        "q" => 95,
+        "crop" => false
+    );
 
+    $opts       = (array) $opts;
 
-            $opts = (array) $opts;
-            $opts = array_merge( $default, $opts );
-            $size = $opts[ "size" ];
+    // Merge default with passed in options
+    $opts       = array_merge( $default, $opts );
 
-            $w = $size[0];
-            $h = $size[1];
-            $quality = $opts[ "q" ];
-            $crop = $opts[ "crop" ];
+    // Resize array
+    $size       = isset( $opts[ "size" ] ) ? $opts[ "size" ] : false;
 
+    // Width
+    $w          = ( $size && isset( $size[ 0 ] ) ) ? $size[ 0 ] : 0;
 
-            $cache = md5( $src . "$w-$h" );
-            $uploads = wp_upload_dir();
+    // Height
+    $h          = ( $size && isset( $size[ 1 ] ) ) ? $size[ 1 ] : 0;
 
-            $thumb_url = $uploads["baseurl"] . "/cache/$cache.jpg";
+    // Image Quality
+    $quality    = isset( $opts[ "q" ] ) ? $opts[ "q" ] : 95;
+
+    // Crop Image?
+    $crop       = isset( $opts[ "crop" ] ) ? $opts[ "crop" ] : false;
+
+    // Generate Unique Cache file
+    $cache      = md5( $src . "$w-$h" );
+    
+    // WordPress uploads directory (works with multi-site)
+    $uploads    = wp_upload_dir();
+
+    // The final thumbnail url
+    $thumb_url  = $uploads[ "baseurl" ] . "/cache/$cache.jpg";
+    
+    // Cache directory path
+    $cache_dir  = $uploads[ "basedir" ] . "/cache";
+    
+    // Thumbnail physical directory
+    $thumb_dir  = $cache_dir;
+
+    // Thumbnail physical filename
+    $thumb_file = $thumb_dir . "/$cache.jpg";
+
+    //
+    // Generate 'cache' directory if it doesn't exist yet.
+    //
+    if( !dir( $cache_dir ) ) {
+        mkdir( $cache_dir, 0755, true );
+    }
+
+    //
+    // Check to see if the file is cached. If not, generate the resized file.
+    //
+    if( !is_file( $thumb_file ) ) {
+
+        //
+        // Get the image editor object
+        //
+        $editor = wp_get_image_editor( $src );
+
+        if( !is_wp_error( $editor ) ) {
+                
+            //
+            // Should we resize the image?
+            //
+            if( $size ) {
+                $editor->resize( $w, $h, $crop );
+            }
+
+            //
+            // Set the image quality
+            //
+            $editor->set_quality( $quality );
             
-            $cache_dir = $uploads['basedir'] . "/cache";
-            $thumb_dir = $cache_dir;
+            // Save the modified file.
+            $editor->save( $thumb_file );
+        
+        } else {
 
-            $thumb_file = $thumb_dir . "/$cache.jpg";
-
-            if( !dir( $cache_dir ) )
-                mkdir( $cache_dir, 0755, true );
-
-            if( !is_file( $thumb_file ) ) {
-
-                
-                $editor = wp_get_image_editor( $src );
-
-                if( !is_wp_error( $editor ) ) {
-                
-                    $editor->resize( $w, $h, $crop );
-                    $editor->set_quality( $quality );
-                    $editor->save( $thumb_file );
-                
-                } else {
-
-                    $thumb_url = $src;  
-                
-                }
-
-            } 
-
-            return $thumb_url;
-
+            // Error occoured, return the original src.
+            $thumb_url = $src;  
+        
         }
+
+    } 
+
+    // Return thumbnail src
+    return $thumb_url;
+
+}
