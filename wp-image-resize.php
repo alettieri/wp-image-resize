@@ -3,8 +3,8 @@
 /**
  * Returns file extension or false, if it's not supported
  *
- * @param {String} url or path to image
- * @return {String} File extension
+ * @param string url or path to image
+ * @return string
  */
 function get_extension( $src ) {
 
@@ -21,9 +21,10 @@ function get_extension( $src ) {
  * If image is not cached, it will create a modified image, cache it,
  * then returns src to modified image.
  * 
- * @param {String} $src Url or File path to image
- * @param {Array} [$opts] Array of options
- * @return {String} path of modified image
+ * 
+ * @param string $src Url or File path to image
+ * @param array $opts { {'size'=>array( int, int ), 'q'=>int, 'crop'=>bool} }
+ * @return string
  */
 function get_image_thumb( $src, $opts = array() ) {
 
