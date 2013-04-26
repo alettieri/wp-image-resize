@@ -94,7 +94,7 @@ function get_image_thumb( $src, $opts = null ) {
     // Generate 'cache' directory if it doesn't exist yet.
     //
     if( !dir( $cache_dir ) ) {
-        mkdir( $cache_dir, 0755, true );
+        mkdir( $cache_dir, 0744, true );
     }
 
 
